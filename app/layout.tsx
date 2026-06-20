@@ -11,7 +11,14 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// Absolute base for og:image / twitter:image URLs. Set NEXT_PUBLIC_SITE_URL in
+// production (e.g. https://breaktheprompt.xyz) so shared cards point at the live
+// domain rather than localhost.
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://breaktheprompt.xyz";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: "Break The Prompt",
   description:
     "A prompt injection CTF. Sixteen days with PIP, an overeager AI intern. Talk it into leaking, approving, and misbehaving.",
