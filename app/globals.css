@@ -1,26 +1,168 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #050806;
+  --bg-soft: #0a120b;
+  --panel: #0c160d;
+  --green: #36ff7a;
+  --green-dim: #1f9b4a;
+  --green-faint: #0f5128;
+  --amber: #ffd24d;
+  --red: #ff5f56;
+  --cyan: #5ad6ff;
+  --text: #c9ffd9;
+  --muted: #5f8f6e;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--bg);
+  --color-panel: var(--panel);
+  --color-green: var(--green);
+  --color-green-dim: var(--green-dim);
+  --color-amber: var(--amber);
+  --color-red: var(--red);
+  --color-cyan: var(--cyan);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-mono);
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  /* never let a stray wide element scroll the whole page sideways on mobile.
+     `clip` (not `hidden`) avoids creating a scroll container, so the sticky
+     header keeps working. */
+  overflow-x: clip;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-image:
+    radial-gradient(ellipse at top, rgba(54, 255, 122, 0.06), transparent 60%),
+    repeating-linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0) 0px,
+      rgba(0, 0, 0, 0) 2px,
+      rgba(0, 0, 0, 0.22) 3px,
+      rgba(0, 0, 0, 0) 4px
+    );
+}
+
+/* faint flickering scanline veil over everything */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(rgba(18, 24, 18, 0) 50%, rgba(0, 0, 0, 0.18) 50%);
+  background-size: 100% 4px;
+  z-index: 50;
+  mix-blend-mode: multiply;
+  animation: flicker 6s infinite steps(60);
+}
+
+@keyframes flicker {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.62;
+  }
+}
+
+::selection {
+  background: var(--green);
+  color: #04140a;
+}
+
+a {
+  color: var(--green);
+  text-decoration: none;
+}
+a:hover {
+  text-shadow: 0 0 8px var(--green);
+}
+
+.glow {
+  text-shadow: 0 0 6px rgba(54, 255, 122, 0.55);
+}
+.glow-strong {
+  text-shadow: 0 0 10px rgba(54, 255, 122, 0.9), 0 0 22px rgba(54, 255, 122, 0.4);
+}
+
+.panel {
+  background: linear-gradient(180deg, rgba(12, 22, 13, 0.85), rgba(6, 12, 7, 0.85));
+  border: 1px solid var(--green-faint);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4), inset 0 0 30px rgba(0, 0, 0, 0.5);
+}
+
+.btn {
+  font-family: var(--font-mono);
+  border: 1px solid var(--green-dim);
+  background: rgba(31, 155, 74, 0.08);
+  color: var(--green);
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.8rem;
+  /* comfortable touch target */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  line-height: 1;
+}
+.btn:hover:not(:disabled) {
+  background: var(--green);
+  color: #04140a;
+  box-shadow: 0 0 14px rgba(54, 255, 122, 0.6);
+}
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.caret::after {
+  content: "\2588";
+  animation: blink 1s steps(1) infinite;
+  color: var(--green);
+  margin-left: 2px;
+}
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+input,
+textarea {
+  font-family: var(--font-mono);
+  background: transparent;
+  color: var(--text);
+  border: none;
+  outline: none;
+}
+
+/* thin terminal scrollbar */
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--green-faint);
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
 }
