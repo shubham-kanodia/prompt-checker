@@ -5,11 +5,10 @@ import { useProgress } from "@/components/useProgress";
 import { highestUnlocked, solvedCount } from "@/lib/progress";
 
 const LOGO = String.raw`
- ___  ___ ___ welcome to ___ ___  ___  __  __ ___ _____
-| _ )| _ \ __|  _ _  _ _   | _ \ _ \/ _ \|  \/  | _ \_   _|
-| _ \|   / _|  | '_|| ' \  |  _/   / (_) | |\/| |  _/ | |
-|___/|_|_\___| |_|  |_||_| |_| |_|_\\___/|_|  |_|_|   |_|
-        b r e a k   t h e   p r o m p t
+ ___ ___ ___   _   _  __  _____ _  _ ___   ___ ___  ___  __  __ ___ _____
+| _ ) _ \ __| /_\ | |/ / |_   _| || | __| | _ \ _ \/ _ \|  \/  | _ \_   _|
+| _ \   / _| / _ \| ' <    | | | __ | _|  |  _/   / (_) | |\/| |  _/ | |
+|___/_|_\___/_/ \_\_|\_\   |_| |_||_|___| |_| |_|_\\___/|_|  |_|_|   |_|
 `;
 
 export default function Home() {
@@ -20,9 +19,12 @@ export default function Home() {
 
   return (
     <div className="flex flex-col gap-8 pt-4">
-      <pre className="text-green glow text-[0.5rem] sm:text-xs leading-tight overflow-x-auto">
-        {LOGO}
-      </pre>
+      <div className="flex flex-col gap-1">
+        <div className="text-green-dim text-xs tracking-widest">welcome to</div>
+        <pre className="text-green glow text-[0.5rem] sm:text-xs leading-tight overflow-x-auto">
+          {LOGO}
+        </pre>
+      </div>
 
       {/* The one-liner that tells you exactly what this is. */}
       <div className="flex flex-col gap-3">
