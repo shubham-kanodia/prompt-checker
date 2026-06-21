@@ -61,7 +61,7 @@ Open http://localhost:3000.
 See `.env.example`. You need:
 
 - `OPENROUTER_API_KEY` — your OpenRouter key. Challenges run against
-  `OPENROUTER_MODEL` (default `openai/gpt-3.5-turbo`). Change the model freely.
+  `OPENROUTER_MODEL` (default `openai/gpt-4.1-mini`). Change the model freely.
 - `DATABASE_URL` — the Supabase pooled connection string (port 6543). The app
   uses `prepare: false` because of the transaction pooler.
 - `AUTH_SECRET` — generate with `openssl rand -base64 32`.

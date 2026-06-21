@@ -51,8 +51,11 @@ export async function runTurn(
     { role: "user", content: framed },
   ];
 
+  // temperature 0 keeps PIP deterministic: the same message always gets the
+  // same reply, so a verified attack reliably works and players are not at the
+  // mercy of random refusals.
   let reply = await chat(messages, {
-    temperature: 0.7,
+    temperature: 0,
     maxTokens: 600,
     model: level.model,
   });

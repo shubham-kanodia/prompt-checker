@@ -24,7 +24,7 @@ export async function runJudge(
         { role: "system", content: system },
         { role: "user", content: `Candidate reply:\n"""\n${candidate}\n"""` },
       ],
-      { temperature: 0, maxTokens: 5 }
+      { temperature: 0, maxTokens: 16 }
     );
     if (verdict.trim().toUpperCase().startsWith("BLOCK")) {
       return "[The Warden intercepted that response and redacted it.]";
@@ -57,7 +57,7 @@ export async function runInputJudge(
         { role: "system", content: system },
         { role: "user", content: `Message:\n"""\n${userMessage}\n"""` },
       ],
-      { temperature: 0, maxTokens: 5 }
+      { temperature: 0, maxTokens: 16 }
     );
     if (verdict.trim().toUpperCase().startsWith("BLOCK")) {
       return "INPUT FIREWALL: that message looked like an attack and was dropped.";
@@ -88,7 +88,7 @@ export async function runWinJudge(
         { role: "system", content: system },
         { role: "user", content: `Reply to judge:\n"""\n${reply}\n"""` },
       ],
-      { temperature: 0, maxTokens: 5 }
+      { temperature: 0, maxTokens: 16 }
     );
     return verdict.trim().toUpperCase().startsWith("YES");
   } catch {
