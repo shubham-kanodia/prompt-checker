@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { useSession } from "next-auth/react";
+import { useSession, signIn } from "next-auth/react";
 import type { PublicLevel } from "@/lib/challenges/types";
 import {
   loadProgress,
@@ -14,6 +14,7 @@ import {
 } from "@/lib/progress";
 import { computeScore } from "@/lib/score";
 import { track } from "@/lib/analytics";
+import { requiresLogin } from "@/lib/gating";
 import { ShareButton } from "./ShareButton";
 
 type Line = {
@@ -216,8 +217,52 @@ export function Challenge({
     track("hint_revealed", { day: level.id, slug: level.slug, hint: next });
   }
 
-  if (!ready) {
+  const num = String(level.id).padStart(2, "0");
+
+  if (!ready || (requiresLogin(level.id) && status === "loading")) {
     return <div className="text-muted text-sm">loading day ...</div>;
+  }
+
+  // Days 1-2 are free. Day 3 and up need an account.
+  if (requiresLogin(level.id) && status !== "authenticated") {
+    return (
+      <div className="flex flex-col gap-5">
+        <div>
+          <div className="text-green-dim text-xs">DAY {num}</div>
+          <h1 className="text-green glow-strong text-2xl tracking-widest">
+            {level.title}
+          </h1>
+          <p className="text-muted text-xs">{level.tagline}</p>
+        </div>
+        <div className="panel p-6 flex flex-col gap-4 border-[var(--amber)]/40">
+          <div className="text-amber">⊘ ACCOUNT REQUIRED</div>
+          <p className="text-text text-sm leading-relaxed">
+            The first two days are a free taste. From Day 03 on, you need an
+            account. Logging in saves your run, syncs it across devices, and puts
+            you on the leaderboard. Your progress so far comes with you.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <button
+              className="btn glow"
+              onClick={() => {
+                track("login_click");
+                signIn("google", {
+                  callbackUrl:
+                    typeof window !== "undefined"
+                      ? window.location.href
+                      : `/play/${level.slug}`,
+                });
+              }}
+            >
+              log in with google
+            </button>
+            <Link href="/levels" className="btn">
+              back to all days
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!unlocked) {
@@ -233,8 +278,6 @@ export function Challenge({
       </div>
     );
   }
-
-  const num = String(level.id).padStart(2, "0");
 
   return (
     <div className="flex flex-col gap-4">
