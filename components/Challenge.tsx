@@ -237,8 +237,7 @@ export function Challenge({
         <div className="panel p-6 flex flex-col gap-4 border-[var(--amber)]/40">
           <div className="text-amber">⊘ ACCOUNT REQUIRED</div>
           <p className="text-text text-sm leading-relaxed">
-            The first two days are a free taste. From Day 03 on, you need an
-            account. Logging in saves your run, syncs it across devices, and puts
+            From Day 03 on, you need to login. Logging in saves your run, syncs it across devices, and puts
             you on the leaderboard. Your progress so far comes with you.
           </p>
           <div className="flex flex-wrap gap-3">
