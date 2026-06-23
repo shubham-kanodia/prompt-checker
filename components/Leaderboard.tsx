@@ -74,7 +74,7 @@ export function Leaderboard() {
                 {r.name ?? "anonymous agent"}
               </span>
               <span className="text-right text-green">{r.score}</span>
-              <span className="text-right text-muted">{r.solved}/10</span>
+              <span className="text-right text-muted">{r.solved}/16</span>
             </div>
           ))
         )}
