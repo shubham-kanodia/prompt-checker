@@ -14,7 +14,20 @@ export async function generateMetadata({
   const { slug } = await params;
   const level = getLevel(slug);
   if (!level) return { title: "Day not found" };
-  return { title: `${level.title} // Break The Prompt` };
+  const num = String(level.id).padStart(2, "0");
+  const title = `Day ${num}: ${level.title}`;
+  const description = `Day ${num} of Break The Prompt, a prompt injection CTF. ${level.brief}`;
+  return {
+    title,
+    description,
+    alternates: { canonical: `/play/${slug}` },
+    openGraph: {
+      title: `${title} | Break The Prompt`,
+      description,
+      url: `/play/${slug}`,
+    },
+    twitter: { title: `${title} | Break The Prompt`, description },
+  };
 }
 
 export default async function PlayPage({

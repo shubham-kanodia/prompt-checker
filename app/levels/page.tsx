@@ -1,7 +1,18 @@
 import { PUBLIC_LEVELS } from "@/lib/challenges/levels";
 import { LevelGrid } from "@/components/LevelGrid";
 
-export const metadata = { title: "The Week // Break The Prompt" };
+export const metadata = {
+  title: "All Levels",
+  description:
+    "All sixteen levels of Break The Prompt, a prompt injection CTF. From asking nicely to defeating an LLM judge, each day teaches a real AI jailbreak technique.",
+  alternates: { canonical: "/levels" },
+  openGraph: {
+    title: "All Levels | Break The Prompt",
+    description:
+      "Sixteen levels of prompt injection, from social engineering to beating an LLM judge.",
+    url: "/levels",
+  },
+};
 
 export default function LevelsPage() {
   const core = PUBLIC_LEVELS.filter((l) => l.tier === "core");
