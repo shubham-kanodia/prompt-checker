@@ -110,8 +110,8 @@ export default function Home() {
       </div>
 
       <p className="text-muted text-xs border-t border-[var(--green-faint)] pt-4">
-        no login, no setup, nothing to install. your progress saves on this
-        device automatically. sign in with google only if you want to sync across
+        no setup, nothing to install. your progress saves on this
+        device automatically. sign in with google if you want to sync across
         devices and land on the leaderboard. play nice, this is for learning how
         these attacks work so you can defend against them.
       </p>
