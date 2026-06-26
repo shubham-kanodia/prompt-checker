@@ -16,6 +16,7 @@ import { computeScore } from "@/lib/score";
 import { track } from "@/lib/analytics";
 import { requiresLogin } from "@/lib/gating";
 import { ShareButton } from "./ShareButton";
+import { ShareModal } from "./ShareModal";
 
 type Line = {
   kind: "you" | "bot" | "blocked" | "sys";
@@ -42,6 +43,8 @@ export function Challenge({
   const [hintsShown, setHintsShown] = useState(0);
   const [won, setWon] = useState(false);
   const [earned, setEarned] = useState(0);
+  const [showShare, setShowShare] = useState(false);
+  const [clearedAttempts, setClearedAttempts] = useState(0);
 
   // Answer submission (extraction days).
   const [answer, setAnswer] = useState("");
@@ -162,6 +165,9 @@ export function Challenge({
       hints_used: hintsShown,
       time_ms: timeMs,
     });
+    // Brag prompt on a fresh clear. Days 1-2 are gimmes, so skip the popup there.
+    setClearedAttempts(attempts);
+    if (level.id > 2) setShowShare(true);
     if (status === "authenticated") {
       fetch("/api/progress", {
         method: "POST",
@@ -461,6 +467,14 @@ export function Challenge({
             <ShareButton level={level} />
           </div>
         </div>
+      )}
+
+      {showShare && (
+        <ShareModal
+          level={level}
+          attempts={clearedAttempts}
+          onClose={() => setShowShare(false)}
+        />
       )}
     </div>
   );
