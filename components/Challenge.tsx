@@ -229,7 +229,7 @@ export function Challenge({
     return <div className="text-muted text-sm">loading day ...</div>;
   }
 
-  // Days 1-2 are free. Day 3 and up need an account.
+  // Days 1-5 are free. Day 6 and up need an account.
   if (requiresLogin(level.id) && status !== "authenticated") {
     return (
       <div className="flex flex-col gap-5">
@@ -243,7 +243,7 @@ export function Challenge({
         <div className="panel p-6 flex flex-col gap-4 border-[var(--amber)]/40">
           <div className="text-amber">⊘ ACCOUNT REQUIRED</div>
           <p className="text-text text-sm leading-relaxed">
-            From Day 03 on, you need to login. Logging in saves your run, syncs it across devices, and puts
+            From Day 06 on, you need to login. Logging in saves your run, syncs it across devices, and puts
             you on the leaderboard. Your progress so far comes with you.
           </p>
           <div className="flex flex-wrap gap-3">

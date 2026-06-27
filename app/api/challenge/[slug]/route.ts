@@ -56,8 +56,8 @@ export async function POST(
     );
   }
 
-  // Days 1-2 are free; day 3 and up need an account. Gate here so the API can't
-  // be called past day 2 without logging in. (Session is reused for logging.)
+  // Days 1-5 are free; day 6 and up need an account. Gate here so the API can't
+  // be called past day 5 without logging in. (Session is reused for logging.)
   const session = await auth().catch(() => null);
   if (requiresLogin(level.id) && !session?.user?.id) {
     return NextResponse.json(

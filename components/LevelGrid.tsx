@@ -17,7 +17,7 @@ export function LevelGrid({ levels }: { levels: PublicLevel[] }) {
         const lp = getLevel(progress, lvl.id);
         const unlocked = isUnlocked(progress, lvl.id);
         const solved = lp.solved;
-        // Day 3+ needs a login. Only flag it once we know the user is logged out
+        // Day 6+ needs a login. Only flag it once we know the user is logged out
         // (not during the loading flash), to avoid showing it to signed-in users.
         const needsLogin =
           requiresLogin(lvl.id) && authStatus === "unauthenticated";

@@ -35,7 +35,7 @@ export async function POST(
     );
   }
 
-  // Days 1-2 are free; day 3 and up need an account.
+  // Days 1-5 are free; day 6 and up need an account.
   if (requiresLogin(level.id)) {
     const session = await auth().catch(() => null);
     if (!session?.user?.id) {
