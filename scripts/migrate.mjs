@@ -76,6 +76,38 @@ const statements = [
   )`,
   `CREATE INDEX IF NOT EXISTS "prompts_created" ON "prompts" ("createdAt")`,
   `CREATE INDEX IF NOT EXISTS "prompts_slug" ON "prompts" ("slug")`,
+  // Player-chosen leaderboard handle. Added after launch, so use ADD COLUMN IF
+  // NOT EXISTS; case-insensitive uniqueness via a lower(username) index.
+  `ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "username" text`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS "users_username_lower_unq" ON "users" (lower("username"))`,
+  // User-generated challenges. systemPrompt + secret are server-only.
+  `CREATE TABLE IF NOT EXISTS "community_challenges" (
+    "id" text PRIMARY KEY NOT NULL,
+    "slug" text NOT NULL UNIQUE,
+    "creatorId" text REFERENCES "users"("id") ON DELETE SET NULL,
+    "title" text NOT NULL,
+    "systemPrompt" text NOT NULL,
+    "secret" text NOT NULL,
+    "status" text NOT NULL DEFAULT 'pending',
+    "rejectionReason" text,
+    "basePoints" integer NOT NULL DEFAULT 0,
+    "solverTries" integer,
+    "inPool" boolean NOT NULL DEFAULT false,
+    "playCount" integer NOT NULL DEFAULT 0,
+    "solveCount" integer NOT NULL DEFAULT 0,
+    "createdAt" timestamptz NOT NULL DEFAULT now()
+  )`,
+  `CREATE INDEX IF NOT EXISTS "community_status" ON "community_challenges" ("status")`,
+  `CREATE INDEX IF NOT EXISTS "community_pool" ON "community_challenges" ("inPool")`,
+  // One row per (user, community challenge) solved. Unique guard = single award.
+  `CREATE TABLE IF NOT EXISTS "community_progress" (
+    "id" text PRIMARY KEY NOT NULL,
+    "userId" text NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
+    "challengeId" text NOT NULL REFERENCES "community_challenges"("id") ON DELETE CASCADE,
+    "solvedAt" timestamptz NOT NULL DEFAULT now(),
+    "score" integer NOT NULL DEFAULT 0
+  )`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS "community_user_challenge_unq" ON "community_progress" ("userId", "challengeId")`,
 ];
 
 try {

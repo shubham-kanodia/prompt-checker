@@ -101,6 +101,9 @@ export default function Home() {
         <Link href="/levels" className="btn">
           all days
         </Link>
+        <Link href="/community" className="btn">
+          community arena
+        </Link>
         {solved > 0 && (
           <span className="text-muted text-xs">
             you have cleared <span className="text-green">{solved}</span>/16. next

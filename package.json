@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "tsc -p tsconfig.test.json && node --test \".test-build/tests/*.test.js\"",
+    "test:ugc": "node --env-file=.env.local scripts/test-ugc.mjs"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.2",

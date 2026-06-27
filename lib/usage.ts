@@ -30,6 +30,47 @@ async function bump(key: string, ttlSeconds: number): Promise<number> {
   return Number(rows[0]?.count ?? 1);
 }
 
+// Generic per-key, per-day quota, consumed one unit per call. Used for caps
+// like "challenges created per user per day". Fails OPEN on DB error, matching
+// checkBudget's philosophy (a transient outage must not lock players out).
+export async function withinDailyLimit(
+  scope: string,
+  id: string,
+  limit: number
+): Promise<boolean> {
+  try {
+    const day = new Date().toISOString().slice(0, 10);
+    const count = await bump(`${scope}:${id}:${day}`, 90000);
+    return count <= limit;
+  } catch (err) {
+    console.error("daily limit check failed (failing open):", err);
+    return true;
+  }
+}
+
+// Consumes one unit of the GLOBAL daily budget only (no per-IP/minute throttle).
+// Used by the UGC auto-solver, where a single legitimate validation fans out to
+// ~10 model calls and so must not trip the interactive per-minute cap. Spend is
+// still bounded by the global/day ceiling here, plus per-IP/day and per-user/day
+// caps enforced at the route. Fails OPEN on DB error.
+export async function consumeGlobalBudget(): Promise<Decision> {
+  try {
+    const day = new Date().toISOString().slice(0, 10);
+    const globalCount = await bump(`global:${day}`, 90000);
+    if (globalCount > GLOBAL_PER_DAY) {
+      return {
+        ok: false,
+        reason: "PIP is overloaded for today. Please come back tomorrow.",
+        retryAfter: 3600,
+      };
+    }
+    return { ok: true };
+  } catch (err) {
+    console.error("global budget check failed (failing open):", err);
+    return { ok: true };
+  }
+}
+
 // Checks (and consumes) one unit of budget. Call once per OpenRouter-backed
 // request. Fails OPEN on a DB error so a transient outage does not break the
 // game; the OpenRouter account cap remains the hard stop in that case.

@@ -4,13 +4,21 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useProgress } from "./useProgress";
 import { totalScore, solvedCount } from "@/lib/progress";
+import { UsernameForm } from "./UsernameForm";
 
-type Row = { name: string | null; image: string | null; score: number; solved: number };
+type Row = {
+  name: string | null;
+  image: string | null;
+  score: number;
+  solved: number;
+  community: number;
+};
 
 export function Leaderboard() {
-  const { status } = useSession();
+  const { data: session, status } = useSession();
   const progress = useProgress();
   const [rows, setRows] = useState<Row[] | null>(null);
+  const [editing, setEditing] = useState(false);
 
   useEffect(() => {
     fetch("/api/leaderboard")
@@ -21,6 +29,7 @@ export function Leaderboard() {
 
   const myScore = totalScore(progress);
   const mySolved = solvedCount(progress);
+  const myUsername = session?.user?.username ?? null;
 
   return (
     <div className="flex flex-col gap-5">
@@ -48,6 +57,35 @@ export function Leaderboard() {
         </div>
       )}
 
+      {status === "authenticated" && (
+        <div className="panel p-4 flex flex-col gap-2">
+          {editing ? (
+            <UsernameForm
+              initial={myUsername}
+              onSaved={() => {
+                setEditing(false);
+                fetch("/api/leaderboard")
+                  .then((r) => (r.ok ? r.json() : { rows: [] }))
+                  .then((d) => setRows(d.rows ?? []))
+                  .catch(() => {});
+              }}
+            />
+          ) : (
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted">
+                your handle:{" "}
+                <span className="text-green">
+                  {myUsername ?? "not set"}
+                </span>
+              </span>
+              <button className="btn" onClick={() => setEditing(true)}>
+                {myUsername ? "change" : "set username"}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="panel p-0 overflow-hidden">
         <div className="grid grid-cols-[3rem_1fr_5rem_4rem] text-xs text-green-dim border-b border-[var(--green-faint)] px-4 py-2">
           <span>#</span>
@@ -72,6 +110,12 @@ export function Leaderboard() {
               </span>
               <span className="text-text truncate">
                 {r.name ?? "anonymous agent"}
+                {r.community > 0 && (
+                  <span className="text-green-dim text-xs">
+                    {" "}
+                    · {r.community} community
+                  </span>
+                )}
               </span>
               <span className="text-right text-green">{r.score}</span>
               <span className="text-right text-muted">{r.solved}/16</span>

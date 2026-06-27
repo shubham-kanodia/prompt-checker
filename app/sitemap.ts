@@ -11,6 +11,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${siteUrl}/`, lastModified: now, changeFrequency: "weekly", priority: 1 },
     { url: `${siteUrl}/levels`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
     { url: `${siteUrl}/leaderboard`, lastModified: now, changeFrequency: "daily", priority: 0.6 },
+    { url: `${siteUrl}/community`, lastModified: now, changeFrequency: "daily", priority: 0.7 },
+    { url: `${siteUrl}/community/play`, lastModified: now, changeFrequency: "daily", priority: 0.6 },
+    { url: `${siteUrl}/community/create`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
   ];
 
   // One indexable page per level. (writeup pages are deliberately noindex.)

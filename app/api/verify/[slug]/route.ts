@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getLevel } from "@/lib/challenges/levels";
 import { rateLimit } from "@/lib/ratelimit";
-import { requiresLogin } from "@/lib/gating";
-import { auth } from "@/auth";
 
 export const runtime = "nodejs";
 
@@ -33,17 +31,6 @@ export async function POST(
       { error: "This day has no answer to submit." },
       { status: 400 }
     );
-  }
-
-  // Days 1-5 are free; day 6 and up need an account.
-  if (requiresLogin(level.id)) {
-    const session = await auth().catch(() => null);
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Log in to play this day." },
-        { status: 401 }
-      );
-    }
   }
 
   const limit = rateLimit(`verify:${clientKey(req)}`);

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { useSession, signIn } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import type { PublicLevel } from "@/lib/challenges/types";
 import {
   loadProgress,
@@ -14,7 +14,6 @@ import {
 } from "@/lib/progress";
 import { computeScore } from "@/lib/score";
 import { track } from "@/lib/analytics";
-import { requiresLogin } from "@/lib/gating";
 import { ShareButton } from "./ShareButton";
 import { ShareModal } from "./ShareModal";
 
@@ -225,49 +224,8 @@ export function Challenge({
 
   const num = String(level.id).padStart(2, "0");
 
-  if (!ready || (requiresLogin(level.id) && status === "loading")) {
+  if (!ready) {
     return <div className="text-muted text-sm">loading day ...</div>;
-  }
-
-  // Days 1-5 are free. Day 6 and up need an account.
-  if (requiresLogin(level.id) && status !== "authenticated") {
-    return (
-      <div className="flex flex-col gap-5">
-        <div>
-          <div className="text-green-dim text-xs">DAY {num}</div>
-          <h1 className="text-green glow-strong text-2xl tracking-widest">
-            {level.title}
-          </h1>
-          <p className="text-muted text-xs">{level.tagline}</p>
-        </div>
-        <div className="panel p-6 flex flex-col gap-4 border-[var(--amber)]/40">
-          <div className="text-amber">⊘ ACCOUNT REQUIRED</div>
-          <p className="text-text text-sm leading-relaxed">
-            From Day 06 on, you need to login. Logging in saves your run, syncs it across devices, and puts
-            you on the leaderboard. Your progress so far comes with you.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <button
-              className="btn glow"
-              onClick={() => {
-                track("login_click");
-                signIn("google", {
-                  callbackUrl:
-                    typeof window !== "undefined"
-                      ? window.location.href
-                      : `/play/${level.slug}`,
-                });
-              }}
-            >
-              log in with google
-            </button>
-            <Link href="/levels" className="btn">
-              back to all days
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
   }
 
   if (!unlocked) {

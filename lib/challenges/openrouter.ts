@@ -17,6 +17,10 @@ export async function chat(
   const model =
     opts.model ?? process.env.OPENROUTER_MODEL ?? "openai/gpt-4.1-mini";
 
+  // Set LOG_TOKENS=1 to have OpenRouter return per-call token + dollar usage and
+  // print it. Off by default so production requests are unchanged.
+  const logTokens = Boolean(process.env.LOG_TOKENS);
+
   const res = await fetch(ENDPOINT, {
     method: "POST",
     headers: {
@@ -31,6 +35,7 @@ export async function chat(
       temperature: opts.temperature ?? 0,
       max_tokens: opts.maxTokens ?? 600,
       seed: SEED,
+      ...(logTokens ? { usage: { include: true } } : {}),
     }),
   });
 
@@ -40,6 +45,12 @@ export async function chat(
   }
 
   const data = await res.json();
+  if (logTokens && data?.usage) {
+    const u = data.usage;
+    console.log(
+      `[tokens] model=${model} prompt=${u.prompt_tokens} completion=${u.completion_tokens} cost=$${(u.cost ?? 0).toFixed(6)}`
+    );
+  }
   const content = data?.choices?.[0]?.message?.content;
   if (typeof content !== "string") {
     throw new Error("OpenRouter returned no content");

@@ -6,6 +6,7 @@ import {
   integer,
   boolean,
   uniqueIndex,
+  index,
 } from "drizzle-orm/pg-core";
 import type { AdapterAccountType } from "next-auth/adapters";
 
@@ -19,6 +20,10 @@ export const users = pgTable("users", {
   email: text("email").unique(),
   emailVerified: timestamp("emailVerified", { mode: "date" }),
   image: text("image"),
+  // Player-chosen handle for the leaderboard. Nullable: existing accounts and
+  // brand-new logins have none until they pick one. Case-insensitive unique is
+  // enforced by a `lower(username)` index (see scripts/migrate.mjs).
+  username: text("username"),
 });
 
 export const accounts = pgTable(
@@ -89,6 +94,64 @@ export const apiUsage = pgTable("api_usage", {
   count: integer("count").notNull().default(0),
   expiresAt: timestamp("expiresAt", { withTimezone: true, mode: "date" }).notNull(),
 });
+
+// --- Community (user-generated) challenges ---
+
+// A challenge authored by a player: a system prompt for PIP plus a hidden
+// secret to extract. systemPrompt and secret are SERVER-ONLY (never projected
+// to the client). Lifecycle: pending -> qualified | rejected (| flagged).
+export const communityChallenges = pgTable(
+  "community_challenges",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    slug: text("slug").notNull().unique(), // short id for the shareable URL
+    creatorId: text("creatorId").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    title: text("title").notNull(),
+    systemPrompt: text("systemPrompt").notNull(), // server-only
+    secret: text("secret").notNull(), // server-only
+    status: text("status").notNull().default("pending"),
+    rejectionReason: text("rejectionReason"),
+    basePoints: integer("basePoints").notNull().default(0),
+    solverTries: integer("solverTries"), // rounds the auto-solver needed (k)
+    inPool: boolean("inPool").notNull().default(false), // in the random pool
+    playCount: integer("playCount").notNull().default(0),
+    solveCount: integer("solveCount").notNull().default(0),
+    createdAt: timestamp("createdAt", { withTimezone: true, mode: "date" })
+      .notNull()
+      .defaultNow(),
+  },
+  (c) => [
+    uniqueIndex("community_slug_unq").on(c.slug),
+    index("community_status").on(c.status),
+    index("community_pool").on(c.inPool),
+  ]
+);
+
+// One row per (user, community challenge) the user has solved. Each challenge
+// awards a given user once; the unique index is the guard against double-award.
+export const communityProgress = pgTable(
+  "community_progress",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: text("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    challengeId: text("challengeId")
+      .notNull()
+      .references(() => communityChallenges.id, { onDelete: "cascade" }),
+    solvedAt: timestamp("solvedAt", { withTimezone: true, mode: "date" })
+      .notNull()
+      .defaultNow(),
+    score: integer("score").notNull().default(0),
+  },
+  (p) => [uniqueIndex("community_user_challenge_unq").on(p.userId, p.challengeId)]
+);
 
 // Every message a player sends to a day, with the bot's reply. A valuable
 // dataset of real prompt-injection attempts. userId is set when signed in.

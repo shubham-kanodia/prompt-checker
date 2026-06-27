@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": false,
+    "outDir": ".test-build",
+    "rootDir": "."
+  },
+  "include": [
+    "lib/username.ts",
+    "lib/community/points.ts",
+    "lib/community/match.ts",
+    "lib/community/createValidation.ts",
+    "lib/community/types.ts",
+    "tests/**/*.test.ts"
+  ],
+  "exclude": ["node_modules"]
+}

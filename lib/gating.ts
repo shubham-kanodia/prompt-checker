@@ -1,9 +1,11 @@
-// Days 1-5 are free to play anonymously. Day 6 and up require a login, to
-// convert the many drive-by players into accounts (and save their progress).
-// Kept in a tiny standalone module so both client components and server routes
-// can import it without pulling in the secret-bearing levels module.
-export const FREE_DAYS = 5;
+// Every day is now free to play anonymously. Login is optional: it only saves
+// progress across devices, puts you on the leaderboard, and lets you author
+// community challenges. This module is kept (rather than deleted) so existing
+// imports keep resolving; requiresLogin is now always false.
+//
+// FREE_DAYS is retained for any copy that references it; it covers all days.
+export const FREE_DAYS = Infinity;
 
-export function requiresLogin(levelId: number): boolean {
-  return levelId > FREE_DAYS;
+export function requiresLogin(_levelId: number): boolean {
+  return false;
 }

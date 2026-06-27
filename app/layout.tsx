@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "@/components/Providers";
 import { SiteHeader } from "@/components/SiteHeader";
 import { ProgressSync } from "@/components/ProgressSync";
+import { UsernamePrompt } from "@/components/UsernamePrompt";
 import { Analytics } from "@/components/Analytics";
 
 const geistMono = Geist_Mono({
@@ -114,6 +115,7 @@ export default function RootLayout({
         <Providers>
           <ProgressSync />
           <SiteHeader />
+          <UsernamePrompt />
           <main className="flex-1 w-full max-w-5xl mx-auto px-4 py-6">
             {children}
           </main>

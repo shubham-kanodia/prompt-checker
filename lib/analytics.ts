@@ -21,7 +21,12 @@ export type GameEvent =
   | "answer_submitted"
   | "day_cleared"
   | "share_clicked"
-  | "login_click";
+  | "login_click"
+  | "community_prompt_sent"
+  | "community_answer_submitted"
+  | "community_challenge_created"
+  | "community_challenge_qualified"
+  | "community_share_copied";
 
 export function track(event: GameEvent, params: Params = {}) {
   if (typeof window === "undefined" || !window.gtag) return;

@@ -1,15 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useSession } from "next-auth/react";
 import type { PublicLevel } from "@/lib/challenges/types";
 import { useProgress } from "./useProgress";
 import { getLevel, isUnlocked } from "@/lib/progress";
-import { requiresLogin } from "@/lib/gating";
 
 export function LevelGrid({ levels }: { levels: PublicLevel[] }) {
   const progress = useProgress();
-  const { status: authStatus } = useSession();
 
   return (
     <div className="grid sm:grid-cols-2 gap-3">
@@ -17,19 +14,13 @@ export function LevelGrid({ levels }: { levels: PublicLevel[] }) {
         const lp = getLevel(progress, lvl.id);
         const unlocked = isUnlocked(progress, lvl.id);
         const solved = lp.solved;
-        // Day 6+ needs a login. Only flag it once we know the user is logged out
-        // (not during the loading flash), to avoid showing it to signed-in users.
-        const needsLogin =
-          requiresLogin(lvl.id) && authStatus === "unauthenticated";
 
         const num = String(lvl.id).padStart(2, "0");
         const status = solved
           ? "CLEARED"
           : !unlocked
             ? "LOCKED"
-            : needsLogin
-              ? "LOGIN"
-              : "OPEN";
+            : "OPEN";
         const statusColor = solved
           ? "text-green"
           : !unlocked
@@ -45,7 +36,7 @@ export function LevelGrid({ levels }: { levels: PublicLevel[] }) {
             <div className="flex items-center justify-between">
               <span className="text-green-dim text-xs">DAY {num}</span>
               <span className={`text-xs ${statusColor}`}>
-                {solved ? "✓ " : !unlocked || needsLogin ? "⊘ " : ""}
+                {solved ? "✓ " : !unlocked ? "⊘ " : ""}
                 {status}
               </span>
             </div>

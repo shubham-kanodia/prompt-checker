@@ -5,7 +5,6 @@ import type { ChatMessage } from "@/lib/challenges/types";
 import { rateLimit } from "@/lib/ratelimit";
 import { checkBudget } from "@/lib/usage";
 import { logPrompt } from "@/lib/prompts";
-import { requiresLogin } from "@/lib/gating";
 import { auth } from "@/auth";
 
 export const runtime = "nodejs";
@@ -56,15 +55,9 @@ export async function POST(
     );
   }
 
-  // Days 1-5 are free; day 6 and up need an account. Gate here so the API can't
-  // be called past day 5 without logging in. (Session is reused for logging.)
+  // Login is optional now. We still resolve the session (best-effort) so we can
+  // attach userId to the prompt log when the player happens to be signed in.
   const session = await auth().catch(() => null);
-  if (requiresLogin(level.id) && !session?.user?.id) {
-    return NextResponse.json(
-      { error: "Log in to play this day." },
-      { status: 401 }
-    );
-  }
 
   let body: { message?: unknown; history?: unknown };
   try {
