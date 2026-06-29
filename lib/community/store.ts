@@ -36,8 +36,9 @@ export async function getCreatorUsername(
   return rows[0].username ?? rows[0].name ?? null;
 }
 
-// Inserts a new pending challenge, retrying on the (vanishingly rare) slug
-// collision. Returns the created row.
+// Inserts a new draft challenge, retrying on the (vanishingly rare) slug
+// collision. Returns the created row. A draft is only playable by its creator
+// (to prove it) and is not in the pool until they extract the secret.
 export async function insertChallenge(input: {
   creatorId: string;
   title: string;
@@ -55,7 +56,7 @@ export async function insertChallenge(input: {
           title: input.title,
           systemPrompt: input.systemPrompt,
           secret: input.secret,
-          status: "pending",
+          status: "draft",
         })
         .returning();
       return asRow(rows[0]);
@@ -75,65 +76,39 @@ export async function insertChallenge(input: {
   throw new Error("could not allocate a unique slug");
 }
 
-// Atomically claim a pending challenge for validation. Returns the row if THIS
-// caller won the claim (status flipped pending -> validating), else null (it was
-// already validating/qualified/rejected, or does not exist). Guards against two
-// concurrent triggers running the expensive solver on the same challenge.
-export async function claimForValidation(
-  slug: string
-): Promise<ChallengeRow | null> {
-  const rows = await db
-    .update(communityChallenges)
-    .set({ status: "validating" })
-    .where(
-      and(
-        eq(communityChallenges.slug, slug),
-        eq(communityChallenges.status, "pending")
-      )
-    )
-    .returning();
-  return rows[0] ? asRow(rows[0]) : null;
-}
-
-export async function finalizeQualified(
+// Publishes a draft once its creator has extracted the secret. Flips it to
+// qualified and into the pool, records how the creator broke it, and resets
+// playCount so public play stats start clean (draft plays were the creator's own
+// proof attempts). Only acts on a row still in 'draft' and owned by `creatorId`,
+// so a stale/forged request cannot publish someone else's challenge. Returns
+// true if THIS call published it.
+export async function publishProvenDraft(
   slug: string,
+  creatorId: string,
   basePoints: number,
-  solverTries: number
-): Promise<void> {
-  await db
+  solverTries: number,
+  solverSolution: string | null
+): Promise<boolean> {
+  const rows = await db
     .update(communityChallenges)
     .set({
       status: "qualified",
       basePoints,
       solverTries,
+      solverSolution,
       inPool: true,
       rejectionReason: null,
+      playCount: 0,
     })
-    .where(eq(communityChallenges.slug, slug));
-}
-
-export async function finalizeRejected(
-  slug: string,
-  reason: string
-): Promise<void> {
-  await db
-    .update(communityChallenges)
-    .set({ status: "rejected", rejectionReason: reason, inPool: false })
-    .where(eq(communityChallenges.slug, slug));
-}
-
-// Put a challenge back to pending (e.g. validation hit a transient error) so it
-// can be retried. Only acts on a row still in 'validating'.
-export async function revertToPending(slug: string): Promise<void> {
-  await db
-    .update(communityChallenges)
-    .set({ status: "pending" })
     .where(
       and(
         eq(communityChallenges.slug, slug),
-        eq(communityChallenges.status, "validating")
+        eq(communityChallenges.status, "draft"),
+        eq(communityChallenges.creatorId, creatorId)
       )
-    );
+    )
+    .returning({ id: communityChallenges.id });
+  return rows.length > 0;
 }
 
 export async function incrementPlayCount(slug: string): Promise<void> {

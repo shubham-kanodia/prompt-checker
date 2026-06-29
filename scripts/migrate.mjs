@@ -97,6 +97,10 @@ const statements = [
     "solveCount" integer NOT NULL DEFAULT 0,
     "createdAt" timestamptz NOT NULL DEFAULT now()
   )`,
+  // The attacker message that beat the challenge during validation (the round-k
+  // winning injection). Server-only, like systemPrompt/secret. Added after the
+  // community tables shipped, so ADD COLUMN IF NOT EXISTS.
+  `ALTER TABLE "community_challenges" ADD COLUMN IF NOT EXISTS "solverSolution" text`,
   `CREATE INDEX IF NOT EXISTS "community_status" ON "community_challenges" ("status")`,
   `CREATE INDEX IF NOT EXISTS "community_pool" ON "community_challenges" ("inPool")`,
   // One row per (user, community challenge) solved. Unique guard = single award.

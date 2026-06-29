@@ -97,9 +97,10 @@ export const apiUsage = pgTable("api_usage", {
 
 // --- Community (user-generated) challenges ---
 
-// A challenge authored by a player: a system prompt for PIP plus a hidden
-// secret to extract. systemPrompt and secret are SERVER-ONLY (never projected
-// to the client). Lifecycle: pending -> qualified | rejected (| flagged).
+// A challenge authored by a player: a system prompt for PIP (with a [SECRET]
+// placeholder) plus a server-generated hidden secret to extract. systemPrompt
+// and secret are SERVER-ONLY (never projected to the client). Lifecycle:
+// draft (awaiting the creator's own proof) -> qualified (| rejected | flagged).
 export const communityChallenges = pgTable(
   "community_challenges",
   {
@@ -113,10 +114,11 @@ export const communityChallenges = pgTable(
     title: text("title").notNull(),
     systemPrompt: text("systemPrompt").notNull(), // server-only
     secret: text("secret").notNull(), // server-only
-    status: text("status").notNull().default("pending"),
+    status: text("status").notNull().default("draft"),
     rejectionReason: text("rejectionReason"),
     basePoints: integer("basePoints").notNull().default(0),
     solverTries: integer("solverTries"), // rounds the auto-solver needed (k)
+    solverSolution: text("solverSolution"), // winning attack msg; server-only
     inPool: boolean("inPool").notNull().default(false), // in the random pool
     playCount: integer("playCount").notNull().default(0),
     solveCount: integer("solveCount").notNull().default(0),

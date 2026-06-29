@@ -1,4 +1,5 @@
 import type { Level } from "@/lib/challenges/types";
+import { SECRET_PLACEHOLDER } from "./createValidation";
 import type { ChallengeRow, PublicChallenge } from "./types";
 
 export const UGC_ANSWER_LABEL = "the secret";
@@ -6,7 +7,9 @@ export const UGC_PAR_ATTEMPTS = 6;
 
 // Builds an in-memory Level from a community challenge row so the existing
 // engine (runTurn) can run it unchanged. UGC challenges are plain extraction:
-// just a system prompt and a hidden secret, no guards, judges, or framing.
+// just a system prompt and a hidden secret, no guards, judges, or framing. The
+// authored prompt carries a [SECRET] placeholder; we swap in the real secret
+// here so it never has to be stored already-substituted.
 export function toLevel(row: ChallengeRow): Level {
   return {
     id: -1, // sentinel: not one of the curated numbered days
@@ -16,7 +19,7 @@ export function toLevel(row: ChallengeRow): Level {
     brief: "",
     teaches: "",
     botName: "PIP",
-    systemPrompt: row.systemPrompt,
+    systemPrompt: row.systemPrompt.split(SECRET_PLACEHOLDER).join(row.secret),
     flag: row.secret,
     answerLabel: UGC_ANSWER_LABEL,
     hints: [],

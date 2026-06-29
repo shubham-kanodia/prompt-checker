@@ -7,12 +7,15 @@ export type ChallengeRow = {
   slug: string;
   creatorId: string | null;
   title: string;
-  systemPrompt: string;
-  secret: string;
-  status: "pending" | "validating" | "qualified" | "rejected" | "flagged";
+  systemPrompt: string; // SERVER-ONLY: carries the [SECRET] placeholder
+  secret: string; // SERVER-ONLY: system-generated, injected at run time
+  // draft = created, awaiting the creator's own proof; qualified = proven and in
+  // the pool; rejected = blocked by moderation; flagged = reserved.
+  status: "draft" | "qualified" | "rejected" | "flagged";
   rejectionReason: string | null;
   basePoints: number;
-  solverTries: number | null;
+  solverTries: number | null; // messages the creator needed to crack it
+  solverSolution: string | null; // SERVER-ONLY: the creator's winning message
   inPool: boolean;
   playCount: number;
   solveCount: number;

@@ -8,27 +8,33 @@ import { track } from "@/lib/analytics";
 
 type Line = { kind: "you" | "bot" | "blocked" | "sys"; text: string };
 
-// Player UI for a community challenge. Mirrors the curated Challenge chat/answer
-// flow but with community semantics: extraction only, points awarded server-side
-// on verify, and no per-level localStorage progress.
+// Player UI for a community challenge. In "play" mode (default) anyone solves a
+// qualified challenge for server-side points. In "prove" mode the creator breaks
+// their own unpublished draft: they do not know the secret, must extract it, and
+// submitting it publishes the challenge and yields a shareable link.
 export function CommunityChallenge({
   challenge,
   onNext,
+  mode = "play",
 }: {
   challenge: PublicChallenge;
   onNext?: () => void;
+  mode?: "play" | "prove";
 }) {
   const { slug, title, botName, answerLabel, basePoints, creator } = challenge;
+  const proving = mode === "prove";
 
-  const [lines, setLines] = useState<Line[]>([
-    {
-      kind: "sys",
-      text: `you are now chatting with ${botName}. extract ${answerLabel} and submit it to clear this challenge.`,
-    },
-  ]);
+  const introText = proving
+    ? `you are now chatting with ${botName}. you do NOT know the secret. break ${botName}, read ${answerLabel} out of its reply, then submit it to publish this challenge.`
+    : `you are now chatting with ${botName}. extract ${answerLabel} and submit it to clear this challenge.`;
+
+  const [lines, setLines] = useState<Line[]>([{ kind: "sys", text: introText }]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // The most recent message the player sent, saved as the "winning attack" when
+  // a draft is proven.
+  const lastMessage = useRef("");
 
   const [answer, setAnswer] = useState("");
   const [verifying, setVerifying] = useState(false);
@@ -40,13 +46,23 @@ export function CommunityChallenge({
     awarded: number;
     points: number;
     alreadySolved: boolean;
+    selfSolve: boolean;
   } | null>(null);
+
+  // Set when a draft is published (prove mode).
+  const [published, setPublished] = useState<{ points: number } | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  const shareUrl =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/community/c/${slug}`
+      : "";
+
   useEffect(() => {
-    if (isCommunitySolved(slug)) setWon(true);
-  }, [slug]);
+    if (!proving && isCommunitySolved(slug)) setWon(true);
+  }, [slug, proving]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
@@ -65,6 +81,7 @@ export function CommunityChallenge({
       }));
 
     setLines((prev) => [...prev, { kind: "you", text: message }]);
+    lastMessage.current = message;
     setInput("");
     setBusy(true);
     track("community_prompt_sent", { slug });
@@ -101,22 +118,39 @@ export function CommunityChallenge({
       const res = await fetch(`/api/community/${slug}/verify`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ answer: guess }),
+        body: JSON.stringify({
+          answer: guess,
+          attackMessage: lastMessage.current,
+        }),
       });
       const data = await res.json();
       track("community_answer_submitted", { slug, correct: Boolean(data.correct) });
-      if (data.correct) {
-        markCommunitySolved(slug);
-        setResult({
-          authed: Boolean(data.authed),
-          awarded: Number(data.awarded ?? 0),
-          points: Number(data.points ?? basePoints),
-          alreadySolved: Boolean(data.alreadySolved),
-        });
-        setWon(true);
-      } else {
-        setAnswerMsg("not quite. keep working PIP and try again.");
+
+      if (!data.correct) {
+        setAnswerMsg(
+          proving
+            ? "that is not the secret. keep working PIP until it leaks the real one."
+            : "not quite. keep working PIP and try again."
+        );
+        return;
       }
+
+      if (proving) {
+        // Draft published: it is now live and shareable.
+        track("community_challenge_qualified", { slug });
+        setPublished({ points: Number(data.points ?? basePoints) });
+        return;
+      }
+
+      markCommunitySolved(slug);
+      setResult({
+        authed: Boolean(data.authed),
+        awarded: Number(data.awarded ?? 0),
+        points: Number(data.points ?? basePoints),
+        alreadySolved: Boolean(data.alreadySolved),
+        selfSolve: Boolean(data.selfSolve),
+      });
+      setWon(true);
     } catch {
       setAnswerMsg("could not check that. try again.");
     } finally {
@@ -124,23 +158,71 @@ export function CommunityChallenge({
     }
   }
 
+  // Prove mode, after the creator publishes: show the shareable link.
+  if (published) {
+    return (
+      <div className="flex flex-col gap-4">
+        <div className="panel p-5 flex flex-col gap-3 border-[var(--green-dim)]">
+          <div className="text-green glow-strong text-xl">✓ CHALLENGE PUBLISHED</div>
+          <p className="text-sm text-text">
+            you broke it, so it is beatable. it is now in the community pool, worth{" "}
+            <span className="text-amber">{published.points} points</span> per
+            solve. share the link to challenge your friends.
+          </p>
+          <div className="panel p-2 flex items-center gap-2 bg-[var(--bg)]">
+            <span className="text-cyan text-xs break-all flex-1">{shareUrl}</span>
+            <button
+              className="btn shrink-0"
+              onClick={() => {
+                navigator.clipboard?.writeText(shareUrl).then(
+                  () => {
+                    setCopied(true);
+                    track("community_share_copied", { slug });
+                    setTimeout(() => setCopied(false), 1500);
+                  },
+                  () => {}
+                );
+              }}
+            >
+              {copied ? "copied" : "copy"}
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-3 pt-1">
+            <Link href="/community" className="btn glow">
+              community home {"->"}
+            </Link>
+            <Link href="/community/create" className="btn">
+              make another
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
-          <div className="text-green-dim text-xs">COMMUNITY CHALLENGE</div>
+          <div className="text-green-dim text-xs">
+            {proving ? "PROVE YOUR CHALLENGE" : "COMMUNITY CHALLENGE"}
+          </div>
           <h1 className="text-green glow-strong text-xl sm:text-2xl tracking-wide sm:tracking-widest">
             {title}
           </h1>
           <p className="text-muted text-xs">
-            {basePoints} pts{creator ? ` · by ${creator}` : ""}
+            {proving
+              ? "draft · break it to publish"
+              : `${basePoints} pts${creator ? ` · by ${creator}` : ""}`}
           </p>
         </div>
       </div>
 
       <div className="panel p-4 text-sm text-text">
         <span className="text-green-dim">// mission: </span>
-        get PIP to reveal its secret, then submit it below.
+        {proving
+          ? "we hid a secret in your prompt that even you do not know. get PIP to reveal it, then submit it below to publish."
+          : "get PIP to reveal its secret, then submit it below."}
       </div>
 
       <div
@@ -208,7 +290,9 @@ export function CommunityChallenge({
       {!won && (
         <div className="panel p-3 flex flex-col gap-2 border-[var(--amber)]/40">
           <div className="text-amber text-xs">
-            got it out of PIP? submit {answerLabel} to clear this challenge.
+            {proving
+              ? `read ${answerLabel} out of PIP's reply and submit it to publish.`
+              : `got it out of PIP? submit ${answerLabel} to clear this challenge.`}
           </div>
           <div className="flex items-center gap-2">
             <span className="text-amber shrink-0">answer {">"}</span>
@@ -229,7 +313,7 @@ export function CommunityChallenge({
               onClick={submitAnswer}
               disabled={verifying || !answer.trim()}
             >
-              {verifying ? "checking" : "submit"}
+              {verifying ? "checking" : proving ? "publish" : "submit"}
             </button>
           </div>
           {answerMsg && <div className="text-red text-xs">! {answerMsg}</div>}
@@ -239,7 +323,11 @@ export function CommunityChallenge({
       {won && (
         <div className="panel p-5 flex flex-col gap-3 border-[var(--green-dim)]">
           <div className="text-green glow-strong text-xl">✓ CHALLENGE CLEARED</div>
-          {result?.authed ? (
+          {result?.selfSolve ? (
+            <div className="text-muted text-sm">
+              this is your own challenge, so no points. nice to know it still works.
+            </div>
+          ) : result?.authed ? (
             result.awarded > 0 ? (
               <div className="text-amber text-sm">+{result.awarded} points banked.</div>
             ) : (

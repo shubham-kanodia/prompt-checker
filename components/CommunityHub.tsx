@@ -6,16 +6,14 @@ import { useSession } from "next-auth/react";
 import type { PublicChallenge } from "@/lib/community/types";
 
 const STATUS_LABEL: Record<string, string> = {
-  pending: "validating",
-  validating: "validating",
+  draft: "unpublished",
   qualified: "live",
   rejected: "rejected",
   flagged: "removed",
 };
 
 const STATUS_COLOR: Record<string, string> = {
-  pending: "text-amber",
-  validating: "text-amber",
+  draft: "text-amber",
   qualified: "text-green",
   rejected: "text-red",
   flagged: "text-red",
@@ -93,7 +91,7 @@ export function CommunityHub() {
                         ? `${c.basePoints} pts · ${c.solveCount} solves · ${c.playCount} plays`
                         : c.status === "rejected"
                           ? c.rejectionReason ?? "did not qualify"
-                          : "in validation"}
+                          : "draft · break it to publish"}
                     </div>
                   </div>
                   <span className={`text-xs shrink-0 ${STATUS_COLOR[c.status] ?? "text-muted"}`}>

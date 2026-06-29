@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { auth } from "@/auth";
 import { getChallengeBySlug, getCreatorUsername } from "@/lib/community/store";
 import { toPublicChallenge } from "@/lib/community/engine";
 import { CommunityChallengeGate } from "@/components/CommunityChallengeGate";
@@ -36,6 +37,15 @@ export default async function CommunityChallengePage({
   const row = await getChallengeBySlug(slug);
   if (!row) notFound();
 
+  const session = await auth().catch(() => null);
+  const isOwner = Boolean(
+    session?.user?.id && session.user.id === row.creatorId
+  );
   const creator = await getCreatorUsername(row.creatorId);
-  return <CommunityChallengeGate initial={toPublicChallenge(row, creator)} />;
+  return (
+    <CommunityChallengeGate
+      initial={toPublicChallenge(row, creator)}
+      isOwner={isOwner}
+    />
+  );
 }

@@ -50,16 +50,25 @@ export async function POST(
   if (!row) {
     return NextResponse.json({ error: "Unknown challenge" }, { status: 404 });
   }
-  // Only qualified challenges are playable. Pending/validating/rejected are not.
-  if (row.status !== "qualified") {
+
+  // Login optional for qualified play; resolve session up front because draft
+  // challenges are playable ONLY by their creator (proving their own challenge).
+  const session = await auth().catch(() => null);
+  const userId = session?.user?.id ?? null;
+
+  if (row.status === "draft") {
+    if (!userId || userId !== row.creatorId) {
+      return NextResponse.json(
+        { error: "This challenge is not available to play." },
+        { status: 403 }
+      );
+    }
+  } else if (row.status !== "qualified") {
     return NextResponse.json(
       { error: "This challenge is not available to play." },
       { status: 403 }
     );
   }
-
-  // Login optional; resolve session only to attach userId to the prompt log.
-  const session = await auth().catch(() => null);
 
   let body: { message?: unknown; history?: unknown };
   try {

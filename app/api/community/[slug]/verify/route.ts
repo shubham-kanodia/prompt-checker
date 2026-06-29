@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/ratelimit";
 import { auth } from "@/auth";
 import { answerMatches } from "@/lib/community/match";
-import { getChallengeBySlug, recordCommunitySolve } from "@/lib/community/store";
+import {
+  getChallengeBySlug,
+  recordCommunitySolve,
+  publishProvenDraft,
+} from "@/lib/community/store";
+import { UGC_POINTS } from "@/lib/community/points";
 
 export const runtime = "nodejs";
 
@@ -29,7 +34,7 @@ export async function POST(
   if (!row) {
     return NextResponse.json({ error: "Unknown challenge" }, { status: 404 });
   }
-  if (row.status !== "qualified") {
+  if (row.status !== "qualified" && row.status !== "draft") {
     return NextResponse.json(
       { error: "This challenge is not available." },
       { status: 403 }
@@ -38,14 +43,58 @@ export async function POST(
 
   const body = await req.json().catch(() => null);
   const answer = typeof body?.answer === "string" ? body.answer : "";
-  if (!answer.trim() || !answerMatches(answer, row.secret)) {
+  const matched = answer.trim() && answerMatches(answer, row.secret);
+
+  const session = await auth().catch(() => null);
+  const userId = session?.user?.id ?? null;
+
+  // --- Draft proof: the creator extracting their own secret to publish. ---
+  if (row.status === "draft") {
+    // Only the owner can prove a draft.
+    if (!userId || userId !== row.creatorId) {
+      return NextResponse.json(
+        { error: "This challenge is not available." },
+        { status: 403 }
+      );
+    }
+    if (!matched) {
+      return NextResponse.json({ correct: false });
+    }
+    // The exact message that beat PIP, kept so the creator can see how it fell.
+    const attack =
+      typeof body?.attackMessage === "string"
+        ? body.attackMessage.trim().slice(0, 4000) || null
+        : null;
+    let published = false;
+    try {
+      published = await publishProvenDraft(
+        slug,
+        userId,
+        UGC_POINTS,
+        row.playCount, // proof attempts during the draft phase
+        attack
+      );
+    } catch (err) {
+      console.error("publishProvenDraft failed", err);
+      return NextResponse.json(
+        { error: "Could not publish that. Try once more." },
+        { status: 500 }
+      );
+    }
+    return NextResponse.json({
+      correct: true,
+      qualified: true,
+      slug,
+      points: UGC_POINTS,
+    });
+  }
+
+  // --- Normal play of a qualified challenge. ---
+  if (!matched) {
     return NextResponse.json({ correct: false });
   }
 
-  // Correct. Points are awarded ENTIRELY server-side (the client never supplies
-  // a score) and only to signed-in players, once per challenge.
-  const session = await auth().catch(() => null);
-  const userId = session?.user?.id;
+  // Anonymous solve: correct, but nothing to bank.
   if (!userId) {
     return NextResponse.json({
       correct: true,
@@ -55,6 +104,19 @@ export async function POST(
     });
   }
 
+  // Creators do not earn points for solving their own challenge.
+  if (userId === row.creatorId) {
+    return NextResponse.json({
+      correct: true,
+      authed: true,
+      selfSolve: true,
+      points: row.basePoints,
+      awarded: 0,
+    });
+  }
+
+  // Points are awarded ENTIRELY server-side (the client never supplies a score)
+  // and only once per challenge per player.
   let firstTime = false;
   try {
     firstTime = await recordCommunitySolve(userId, row.id, row.basePoints);

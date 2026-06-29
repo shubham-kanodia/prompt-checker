@@ -5,14 +5,17 @@ import { checkBudget, withinDailyLimit } from "@/lib/usage";
 import { validateCreate } from "@/lib/community/createValidation";
 import { moderateChallenge } from "@/lib/community/validate";
 import { insertChallenge } from "@/lib/community/store";
+import { generateSecret } from "@/lib/community/secret";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
 
-// A signed-in user can author at most this many challenges per day; the IP cap
-// is a backstop against one person across many accounts.
-const CREATE_PER_USER_PER_DAY = Number(process.env.UGC_CREATE_PER_DAY ?? 5);
-const CREATE_PER_IP_PER_DAY = Number(process.env.UGC_CREATE_PER_DAY_IP ?? 10);
+// A signed-in user can author at most this many drafts per day; the IP cap is a
+// backstop against one person across many accounts. The only model spend here is
+// one cheap moderation call (the creator proves solvability themselves, so there
+// is no AI solver), so these are sized to deter pool spam, not to bound cost.
+const CREATE_PER_USER_PER_DAY = Number(process.env.UGC_CREATE_PER_DAY ?? 10);
+const CREATE_PER_IP_PER_DAY = Number(process.env.UGC_CREATE_PER_DAY_IP ?? 20);
 
 function clientKey(req: NextRequest): string {
   const real = req.headers.get("x-real-ip");
@@ -82,8 +85,15 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const row = await insertChallenge({ creatorId: userId, ...check.value });
-    // Returns the slug so the client can kick off validation and show the link.
+    // We generate the secret and inject it where the creator's [SECRET]
+    // placeholder sits (at run time). The creator never sees it and must extract
+    // it to publish, which is what proves the challenge is solvable.
+    const row = await insertChallenge({
+      creatorId: userId,
+      ...check.value,
+      secret: generateSecret(),
+    });
+    // Returns the slug so the client can send the creator to prove their draft.
     return NextResponse.json({ slug: row.slug, status: row.status });
   } catch (err) {
     console.error("challenge insert failed", err);
