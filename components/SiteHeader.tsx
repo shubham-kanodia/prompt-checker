@@ -39,6 +39,13 @@ export function SiteHeader() {
         <nav className="flex items-center gap-2.5 sm:gap-5 shrink-0">
           {navItem("/levels", "levels")}
           {navItem(
+            "/how-to-play",
+            <>
+              <span className="sm:hidden">guide</span>
+              <span className="hidden sm:inline">how to play</span>
+            </>
+          )}
+          {navItem(
             "/community",
             <>
               <span className="sm:hidden">arena</span>

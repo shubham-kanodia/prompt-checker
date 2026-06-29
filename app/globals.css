@@ -134,6 +134,20 @@ a:hover {
   cursor: not-allowed;
 }
 
+/* Filled, always-on variant for the single primary call to action. */
+.btn-cta {
+  background: var(--green);
+  color: #04140a;
+  border-color: var(--green);
+  font-weight: 700;
+  box-shadow: 0 0 18px rgba(54, 255, 122, 0.55);
+}
+.btn-cta:hover:not(:disabled) {
+  background: var(--green);
+  color: #04140a;
+  box-shadow: 0 0 28px rgba(54, 255, 122, 0.9);
+}
+
 .caret::after {
   content: "\2588";
   animation: blink 1s steps(1) infinite;
