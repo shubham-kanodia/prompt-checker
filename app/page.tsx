@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useProgress } from "@/components/useProgress";
-import { highestUnlocked, solvedCount } from "@/lib/progress";
+import { highestUnlocked, solvedCount, TOTAL_LEVELS } from "@/lib/progress";
 
 const LOGO = String.raw`
  ___ ___ ___   _   _  __  _____ _  _ ___   ___ ___  ___  __  __ ___ _____
@@ -70,8 +70,8 @@ export default function Home() {
           </Link>
           {solved > 0 && (
             <span className="text-muted text-xs">
-              you have cleared <span className="text-green">{solved}</span>/16.
-              next up: day {String(next).padStart(2, "0")}.
+              you have cleared <span className="text-green">{solved}</span>/
+              {TOTAL_LEVELS}. next up: day {String(next).padStart(2, "0")}.
             </span>
           )}
         </div>

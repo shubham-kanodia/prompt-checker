@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useProgress } from "./useProgress";
-import { totalScore, solvedCount } from "@/lib/progress";
+import { totalScore, solvedCount, TOTAL_LEVELS } from "@/lib/progress";
 import { AuthButton } from "./AuthButton";
 
 export function SiteHeader() {
@@ -61,7 +61,7 @@ export function SiteHeader() {
           )}
           <span className="text-xs text-muted hidden md:inline whitespace-nowrap">
             <span className="text-amber">{score}</span> pts ·{" "}
-            <span className="text-green">{solved}</span>/16
+            <span className="text-green">{solved}</span>/{TOTAL_LEVELS}
           </span>
           <AuthButton />
         </nav>

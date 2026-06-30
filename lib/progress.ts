@@ -16,6 +16,11 @@ export type Progress = {
   levels: Record<number, LevelProgress>;
 };
 
+// Total number of built-in days. Client-safe single source for the "X / N"
+// progress readouts (the levels module is server-only because it holds the
+// flags, so it cannot be imported here). Keep this in sync with LEVELS.
+export const TOTAL_LEVELS = 20;
+
 const KEY = "btp:progress:v1";
 
 function emptyLevel(): LevelProgress {

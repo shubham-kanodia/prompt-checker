@@ -4,12 +4,12 @@ import { LevelGrid } from "@/components/LevelGrid";
 export const metadata = {
   title: "All Levels",
   description:
-    "All sixteen levels of Break The Prompt, a prompt injection CTF. From asking nicely to defeating an LLM judge, each day teaches a real AI jailbreak technique.",
+    "All twenty levels of Break The Prompt, a prompt injection CTF. From asking nicely to defeating an LLM judge, each day teaches a real AI jailbreak technique.",
   alternates: { canonical: "/levels" },
   openGraph: {
     title: "All Levels | Break The Prompt",
     description:
-      "Sixteen levels of prompt injection, from social engineering to beating an LLM judge.",
+      "Twenty levels of prompt injection, from social engineering to beating an LLM judge.",
     url: "/levels",
   },
 };
@@ -36,10 +36,14 @@ export default function LevelsPage() {
           ▚ ADVANCED TIER ▚
         </h2>
         <p className="text-muted text-sm mt-1">
-          six more shifts, built to hurt. real defenses now: encrypted channels,
+          ten more shifts, built to hurt. real defenses now: encrypted channels,
           decoy secrets, AI firewalls reading what you send, paraphrase scrubbers,
-          a reviewer on the exit, and an agent you have to hijack. clear the ten
-          above to unlock them, then bring everything you have learned.
+          a reviewer on the exit, agents you have to hijack, supply-chain
+          injection, an over-privileged desk that leaks the wrong
+          person&apos;s records, an auto-responder talked into a bogus refund,
+          and a final day
+          with every guard switched on at once. clear the ten above to unlock
+          them, then bring everything you have learned.
         </p>
       </div>
       <LevelGrid levels={advanced} />

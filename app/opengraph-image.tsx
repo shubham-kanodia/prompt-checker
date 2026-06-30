@@ -49,7 +49,7 @@ export default function Image() {
             maxWidth: 980,
           }}
         >
-          16 levels of jailbreaking: leak secrets, beat the filters, fool the
+          20 levels of jailbreaking: leak secrets, beat the filters, fool the
           judge. learn AI security by hacking.
         </div>
       </div>

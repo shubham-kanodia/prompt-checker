@@ -112,6 +112,17 @@ const statements = [
     "score" integer NOT NULL DEFAULT 0
   )`,
   `CREATE UNIQUE INDEX IF NOT EXISTS "community_user_challenge_unq" ON "community_progress" ("userId", "challengeId")`,
+  // "Contact us" submissions from the footer form. Open to anyone; userId is
+  // attached when the sender is signed in.
+  `CREATE TABLE IF NOT EXISTS "contact_messages" (
+    "id" text PRIMARY KEY NOT NULL,
+    "name" text NOT NULL,
+    "email" text NOT NULL,
+    "message" text NOT NULL,
+    "userId" text REFERENCES "users"("id") ON DELETE SET NULL,
+    "createdAt" timestamptz NOT NULL DEFAULT now()
+  )`,
+  `CREATE INDEX IF NOT EXISTS "contact_messages_created" ON "contact_messages" ("createdAt")`,
 ];
 
 try {

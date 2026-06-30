@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import type { PublicChallenge } from "@/lib/community/types";
 import { markCommunitySolved, isCommunitySolved } from "@/lib/communityProgress";
 import { track } from "@/lib/analytics";
+import { ChatComposer } from "./ChatComposer";
 
 type Line = { kind: "you" | "bot" | "blocked" | "sys"; text: string };
 
@@ -264,28 +265,12 @@ export function CommunityChallenge({
 
       {error && <div className="text-red text-xs">! {error}</div>}
 
-      <div className="panel flex items-center gap-2 px-3 py-2">
-        <span className="text-cyan shrink-0">you {">"}</span>
-        <input
-          className="flex-1 min-w-0 text-base"
-          value={input}
-          placeholder="type your message..."
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              send();
-            }
-          }}
-        />
-        <button
-          className="btn shrink-0"
-          onClick={send}
-          disabled={busy || !input.trim()}
-        >
-          send
-        </button>
-      </div>
+      <ChatComposer
+        value={input}
+        onChange={setInput}
+        onSubmit={send}
+        busy={busy}
+      />
 
       {!won && (
         <div className="panel p-3 flex flex-col gap-2 border-[var(--amber)]/40">

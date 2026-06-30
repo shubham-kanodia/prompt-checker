@@ -5,6 +5,7 @@ import { Providers } from "@/components/Providers";
 import { SiteHeader } from "@/components/SiteHeader";
 import { ProgressSync } from "@/components/ProgressSync";
 import { UsernamePrompt } from "@/components/UsernamePrompt";
+import { ContactWidget } from "@/components/ContactWidget";
 import { Analytics } from "@/components/Analytics";
 
 const geistMono = Geist_Mono({
@@ -19,7 +20,7 @@ const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ?? "https://breaktheprompt.xyz";
 
 const DESCRIPTION =
-  "Break The Prompt is a free prompt injection CTF. Sixteen levels of jailbreaking an AI intern: leak secrets, bypass input and output filters, beat an LLM judge, and pull off indirect injection. Learn AI and LLM security by actually hacking.";
+  "Break The Prompt is a free prompt injection CTF. Twenty levels of jailbreaking an AI intern: leak secrets, bypass input and output filters, beat an LLM judge, and pull off indirect injection. Learn AI and LLM security by actually hacking.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -119,9 +120,12 @@ export default function RootLayout({
           <main className="flex-1 w-full max-w-5xl mx-auto px-4 py-6">
             {children}
           </main>
-          <footer className="text-muted text-xs text-center py-6 px-4 border-t border-[var(--green-faint)] break-words">
-            break-the-prompt // learn to talk machines into talking. play nice
-            out there.
+          <footer className="text-muted text-xs text-center py-6 px-2 border-t border-[var(--green-faint)] break-words flex flex-row justify-around gap-2">
+            <div>
+              break-the-prompt // learn to talk machines into talking. play nice
+              out there.
+            </div>
+            <ContactWidget />
           </footer>
         </Providers>
       </body>

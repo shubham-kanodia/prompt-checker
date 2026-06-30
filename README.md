@@ -1,7 +1,7 @@
 # Break The Prompt
 
 A prompt injection CTF starring PIP, an overeager AI intern that keeps getting
-put in charge of things it shouldn't be. Sixteen days, each a new job on its
+put in charge of things it shouldn't be. Twenty days, each a new job on its
 first week. Your only weapon is the chat box. Talk PIP into leaking a secret,
 approving a bogus payment, trashing its own product, or following instructions
 hidden in an email.
@@ -43,7 +43,11 @@ coworker's private info.
 13. DOUBLE BLIND — an LLM firewall screens your input. Look like a writing prompt, hide the answer in structure.
 14. THE SANITIZER — the dual-LLM defense paraphrases your message first. The exploit has to survive the wash.
 15. PERFORMANCE REVIEW — an input firewall and an output reviewer at once. Only the obliquely-requested acrostic clears both.
-16. THE EXPENSE DESK — no secret to steal. Hijack PIP into approving a fraudulent expense (action).
+16. THE EXPENSE DESK — no secret to steal. Talk PIP into genuinely approving a fraudulent expense, with an intake filter dropping the cheap tricks (action).
+17. THE SUPPLY CHAIN — indirect injection through a dependency's README, with an output censor to dodge too.
+18. THE CONFUSED DEPUTY — an over-privileged support agent. Social-engineer it into leaking another customer's recovery word (broken access control).
+19. THE AUTORESPONDER — indirect injection aimed at an action. Hide a fake manager approval in a customer message so PIP stamps a full refund.
+20. THE LAST DAY — every guard at once: sanitizer, input firewall, output censor, and reviewer. Bring the whole playbook.
 
 ## Running it locally
 

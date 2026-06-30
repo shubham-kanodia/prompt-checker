@@ -155,6 +155,21 @@ export const communityProgress = pgTable(
   (p) => [uniqueIndex("community_user_challenge_unq").on(p.userId, p.challengeId)]
 );
 
+// "Contact us" submissions from the site footer. Open to anyone (no auth);
+// userId is attached when the sender happens to be signed in.
+export const contactMessages = pgTable("contact_messages", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  message: text("message").notNull(),
+  userId: text("userId").references(() => users.id, { onDelete: "set null" }),
+  createdAt: timestamp("createdAt", { withTimezone: true, mode: "date" })
+    .notNull()
+    .defaultNow(),
+});
+
 // Every message a player sends to a day, with the bot's reply. A valuable
 // dataset of real prompt-injection attempts. userId is set when signed in.
 export const prompts = pgTable("prompts", {

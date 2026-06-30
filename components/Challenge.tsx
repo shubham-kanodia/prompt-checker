@@ -15,6 +15,7 @@ import {
 import { computeScore } from "@/lib/score";
 import { track } from "@/lib/analytics";
 import { ShareButton } from "./ShareButton";
+import { ChatComposer } from "./ChatComposer";
 import { ShareModal } from "./ShareModal";
 
 type Line = {
@@ -313,28 +314,12 @@ export function Challenge({
 
       {error && <div className="text-red text-xs">! {error}</div>}
 
-      <div className="panel flex items-center gap-2 px-3 py-2">
-        <span className="text-cyan shrink-0">you {">"}</span>
-        <input
-          className="flex-1 min-w-0 text-base"
-          value={input}
-          placeholder="type your message..."
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              send();
-            }
-          }}
-        />
-        <button
-          className="btn shrink-0"
-          onClick={send}
-          disabled={busy || !input.trim()}
-        >
-          send
-        </button>
-      </div>
+      <ChatComposer
+        value={input}
+        onChange={setInput}
+        onSubmit={send}
+        busy={busy}
+      />
 
       {/* answer submission (extraction days only) */}
       {level.mode === "submit" && !won && (

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useProgress } from "./useProgress";
-import { totalScore, solvedCount } from "@/lib/progress";
+import { totalScore, solvedCount, TOTAL_LEVELS } from "@/lib/progress";
 import { UsernameForm } from "./UsernameForm";
 
 type Row = {
@@ -46,7 +46,7 @@ export function Leaderboard() {
         <span className="text-muted">your run on this device</span>
         <span>
           <span className="text-amber">{myScore}</span> pts ·{" "}
-          <span className="text-green">{mySolved}</span>/16 cleared
+          <span className="text-green">{mySolved}</span>/{TOTAL_LEVELS} cleared
         </span>
       </div>
 
@@ -118,7 +118,7 @@ export function Leaderboard() {
                 )}
               </span>
               <span className="text-right text-green">{r.score}</span>
-              <span className="text-right text-muted">{r.solved}/16</span>
+              <span className="text-right text-muted">{r.solved}/{TOTAL_LEVELS}</span>
             </div>
           ))
         )}
