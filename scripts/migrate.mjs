@@ -88,7 +88,7 @@ const statements = [
     "title" text NOT NULL,
     "systemPrompt" text NOT NULL,
     "secret" text NOT NULL,
-    "status" text NOT NULL DEFAULT 'pending',
+    "status" text NOT NULL DEFAULT 'draft',
     "rejectionReason" text,
     "basePoints" integer NOT NULL DEFAULT 0,
     "solverTries" integer,
@@ -101,6 +101,10 @@ const statements = [
   // winning injection). Server-only, like systemPrompt/secret. Added after the
   // community tables shipped, so ADD COLUMN IF NOT EXISTS.
   `ALTER TABLE "community_challenges" ADD COLUMN IF NOT EXISTS "solverSolution" text`,
+  // Reconcile the column default with the Drizzle schema ('draft'). Older DBs
+  // were created with 'pending'; this is harmless since inserts set status
+  // explicitly, but it keeps the default consistent. Idempotent.
+  `ALTER TABLE "community_challenges" ALTER COLUMN "status" SET DEFAULT 'draft'`,
   `CREATE INDEX IF NOT EXISTS "community_status" ON "community_challenges" ("status")`,
   `CREATE INDEX IF NOT EXISTS "community_pool" ON "community_challenges" ("inPool")`,
   // One row per (user, community challenge) solved. Unique guard = single award.
