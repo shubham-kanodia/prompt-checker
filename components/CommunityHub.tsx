@@ -38,7 +38,7 @@ export function CommunityHub() {
     <div className="flex flex-col gap-5">
       <div>
         <h1 className="text-green glow-strong text-2xl tracking-widest">
-          COMMUNITY
+          COMMUNITY ARENA
         </h1>
         <p className="text-muted text-sm mt-1">
           challenges made by players, for players. solve them to climb the

@@ -45,13 +45,7 @@ export function SiteHeader() {
               <span className="hidden sm:inline">how to play</span>
             </>
           )}
-          {navItem(
-            "/community",
-            <>
-              <span className="sm:hidden">arena</span>
-              <span className="hidden sm:inline">community</span>
-            </>
-          )}
+          {navItem("/community", "arena")}
           {navItem(
             "/leaderboard",
             <>
