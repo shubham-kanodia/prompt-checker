@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { PUBLIC_LEVELS } from "@/lib/challenges/levels";
 import { LevelGrid } from "@/components/LevelGrid";
 
@@ -20,6 +21,23 @@ export default function LevelsPage() {
 
   return (
     <div className="flex flex-col gap-5">
+      <div className="panel p-3 border-[var(--amber)]/40 flex items-center gap-3">
+        <span className="text-amber glow text-lg" aria-hidden>
+          ✦
+        </span>
+        <p className="text-amber text-sm tracking-wide">
+          <span className="glow">new challenges every week.</span>{" "}
+          <span className="text-muted">
+            fresh challenges drop regularly, come back to keep breaking PIP.
+            check out the community generated challenges in the {" "}
+            <Link href="/community" className="text-amber glow hover:underline">
+              community arena
+            </Link>
+            .
+          </span>
+        </p>
+      </div>
+
       <div>
         <h1 className="text-green glow-strong text-2xl tracking-widest">
           PIP&apos;S FIRST WEEK
