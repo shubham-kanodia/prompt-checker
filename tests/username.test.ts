@@ -21,6 +21,12 @@ test("rejects bad characters", () => {
   assert.equal(validateUsername("emoji😀x").ok, false);
 });
 
+test("rejects handles with no letters", () => {
+  assert.equal(validateUsername("___").ok, false);
+  assert.equal(validateUsername("123").ok, false);
+  assert.equal(validateUsername("__1").ok, false);
+});
+
 test("rejects reserved names case-insensitively", () => {
   assert.equal(validateUsername("admin").ok, false);
   assert.equal(validateUsername("ADMIN").ok, false);

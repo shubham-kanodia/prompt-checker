@@ -48,6 +48,9 @@ export function validateUsername(raw: unknown): UsernameCheck {
   if (!/^[a-zA-Z0-9_]+$/.test(value)) {
     return { ok: false, reason: "Letters, numbers, and underscores only." };
   }
+  if (!/[a-zA-Z]/.test(value)) {
+    return { ok: false, reason: "Include at least one letter." };
+  }
   if (RESERVED.has(value.toLowerCase())) {
     return { ok: false, reason: "That username is reserved." };
   }
